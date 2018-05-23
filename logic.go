@@ -20,11 +20,25 @@ func Move(alien Alien, direction Direction) bool {
 	return true
 }
 
+// RemovePaths removes all the paths from the neighbour cities
+func RemovePaths(city City) bool {
+	for _, road := range city.roads {
+		var opositeDir = road.OppositeDirection()
+		var destRoad = road.destination.roads
+		var res = destRoad.Destroy(opositeDir)
+		if !res {
+			return false
+		}
+	}
+	return true
+}
+
 // Fight destroys all the roads of the city and its aliens and
 // sets the state to destroyed
 func Fight(city City) bool {
-	city.roads.Destroy()  // destroy all roads
-	city.aliens.KillAll() // kill all aliens in the city
-	city.destroyed = true // set state of city to destroyed
+	RemovePaths(city)
+	city.roads.DestroyAll() // destroy all roads
+	city.aliens.KillAll()   // kill all aliens in the city
+	city.destroyed = true   // set state of city to destroyed
 	return true
 }

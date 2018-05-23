@@ -4,6 +4,8 @@ import (
 	"reflect"
 )
 
+// ========== City ==========
+
 // City definition
 type City struct {
 	name      string
@@ -16,8 +18,8 @@ type City struct {
 func NewCity(name string) City {
 	return City{
 		name:      name,
-		roads:     nil,
-		aliens:    nil,
+		roads:     InitRoads(),
+		aliens:    InitAliens(),
 		destroyed: false,
 	}
 }
@@ -26,13 +28,13 @@ func NewCity(name string) City {
 func (city City) GetRoad(direction Direction) *Road {
 	switch direction {
 	case North:
-		return &city.roads[0]
+		return city.roads[0]
 	case South:
-		return &city.roads[1]
+		return city.roads[1]
 	case East:
-		return &city.roads[2]
+		return city.roads[2]
 	case West:
-		return &city.roads[3]
+		return city.roads[3]
 	default:
 		return nil
 	}
@@ -69,19 +71,49 @@ func (city City) RemoveAlien(i int) bool {
 	return city.aliens.remove(i)
 }
 
-// Roads is a set of roads
-type Roads []Road
+// ========== Roads ==========
 
-// Destroy destroys all the roads of a city
-func (roads Roads) Destroy() bool {
+// Roads is a set of 4 roads, one for each direction
+type Roads [4]*Road
+
+// InitRoads initializes an empty road array of size 4
+func InitRoads() Roads {
+	return [4]*Road{}
+}
+
+// Destroy a single road in a given direction
+func (roads Roads) Destroy(dir Direction) bool {
+	switch dir {
+	case North:
+		roads[0] = nil
+		return true
+	case South:
+		roads[1] = nil
+		return true
+	case East:
+		roads[2] = nil
+		return true
+	case West:
+		roads[3] = nil
+		return true
+	default:
+		return false
+	}
+}
+
+// DestroyAll destroys all the roads of a city
+func (roads Roads) DestroyAll() bool {
 	for _, road := range roads {
 		var isDestroyed = road.Destroy()
 		if !isDestroyed {
 			return false
 		}
+		road = nil
 	}
 	return true
 }
+
+// ========== Direction ==========
 
 // Direction nolint is one of [N, S, E, W]
 type Direction string
@@ -95,11 +127,22 @@ const (
 	Destroyed Direction = ""
 )
 
+// ========== Road ==========
+
 // Road struct definition
 type Road struct {
 	origin      *City
 	direction   Direction
 	destination *City
+}
+
+// NewRoad creates a new Road
+func NewRoad(cityA *City, dir Direction, cityB *City) Road {
+	return Road{
+		origin:      cityA,
+		direction:   dir,
+		destination: cityB,
+	}
 }
 
 // Origin city
@@ -155,17 +198,15 @@ func (road Road) Destroy() bool {
 	return true
 }
 
+// ========== Aliens ==========
+
 // Aliens is a set of aliens
 // NOTE: I used a map for constant addition and deletion of values
 type Aliens map[int]*Alien
 
-// Get alien value from the map
-func (aliens Aliens) Get(i int) *Alien {
-	alien, ok := aliens[i]
-	if !ok {
-		return nil
-	}
-	return alien
+// InitAliens initializes an empty aliens map
+func InitAliens() Aliens {
+	return map[int]*Alien{}
 }
 
 // AddAlien adds a new alien to the map
@@ -175,6 +216,15 @@ func (aliens Aliens) AddAlien(i int, alien *Alien) bool {
 	}
 	aliens[i] = alien
 	return true
+}
+
+// Get alien value from the map
+func (aliens Aliens) Get(i int) *Alien {
+	alien, ok := aliens[i]
+	if !ok {
+		return nil
+	}
+	return alien
 }
 
 // Exists checks if a given alien is on the map
@@ -216,6 +266,8 @@ func (aliens Aliens) remove(i int) bool {
 	delete(aliens, i)
 	return true
 }
+
+// ========== Alien ==========
 
 // Alien structure
 type Alien struct {
