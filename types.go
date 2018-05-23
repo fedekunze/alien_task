@@ -1,4 +1,4 @@
-package app
+package main
 
 import (
 	"reflect"
@@ -22,13 +22,20 @@ func NewCity(name string) City {
 	}
 }
 
-// Destroy destroys all the roads of the city and its aliens and
-// sets the state to destroyed
-func (city City) Destroy() bool {
-	city.roads.Destroy()  // destroy all roads
-	city.aliens.Kill()    // kill all aliens in the city
-	city.destroyed = true // set state of city to destroyed
-	return true
+// GetRoad returns a pointer to the road in the desired direction
+func (city City) GetRoad(direction Direction) *Road {
+	switch direction {
+	case North:
+		return &city.roads[0]
+	case South:
+		return &city.roads[1]
+	case East:
+		return &city.roads[2]
+	case West:
+		return &city.roads[3]
+	default:
+		return nil
+	}
 }
 
 // IsDestroyed returns the current status of the city
@@ -46,6 +53,20 @@ func (city City) CountAliens() int {
 func (city City) HasFight() bool {
 	var totalAliens = city.CountAliens()
 	return totalAliens > 1
+}
+
+// AddAlien adds an alient to the mapping
+func (city City) AddAlien(alien *Alien) bool {
+	if !alien.IsAlive() {
+		return false
+	}
+
+	return true
+}
+
+// RemoveAlien removes an alien from the set
+func (city City) RemoveAlien(i int) bool {
+	return city.aliens.remove(i)
 }
 
 // Roads is a set of roads
@@ -76,12 +97,22 @@ const (
 
 // Road struct definition
 type Road struct {
-	cityA     City
-	direction Direction
-	cityB     City
+	origin      *City
+	direction   Direction
+	destination *City
 }
 
-// GetDirection gets the current direction of the road (i.e. from cityA to cityB)
+// Origin city
+func (road Road) Origin() *City {
+	return road.origin
+}
+
+// Destination city
+func (road Road) Destination() *City {
+	return road.destination
+}
+
+// GetDirection gets the current direction of the road (i.e. from origin to destination)
 func (road Road) GetDirection() string {
 	switch road.direction {
 	case North:
@@ -100,7 +131,7 @@ func (road Road) GetDirection() string {
 	}
 }
 
-// OppositeDirection gets the opossite direction of the road (i.e. from cityB to cityA)
+// OppositeDirection gets the opossite direction of the road (i.e. from destination to origin)
 func (road Road) OppositeDirection() Direction {
 	switch road.direction {
 	case North:
@@ -119,14 +150,41 @@ func (road Road) OppositeDirection() Direction {
 // Destroy destroys the road
 func (road Road) Destroy() bool {
 	road.direction = Destroyed
+	road.origin = nil
+	road.destination = nil
 	return true
 }
 
 // Aliens is a set of aliens
-type Aliens []Alien
+// NOTE: I used a map for constant addition and deletion of values
+type Aliens map[int]*Alien
 
-// Kill kills every alien
-func (aliens Aliens) Kill() bool {
+// Get alien value from the map
+func (aliens Aliens) Get(i int) *Alien {
+	alien, ok := aliens[i]
+	if !ok {
+		return nil
+	}
+	return alien
+}
+
+// AddAlien adds a new alien to the map
+func (aliens Aliens) AddAlien(i int, alien *Alien) bool {
+	if aliens.Exists(i) {
+		return false
+	}
+	aliens[i] = alien
+	return true
+}
+
+// Exists checks if a given alien is on the map
+func (aliens Aliens) Exists(i int) bool {
+	_, exists := aliens[i]
+	return exists
+}
+
+// KillAll kills every alien on the mapping
+func (aliens Aliens) KillAll() bool {
 	for _, alien := range aliens {
 		var isDead = alien.Kill()
 		if !isDead {
@@ -139,6 +197,24 @@ func (aliens Aliens) Kill() bool {
 // Len returns the total amount of aliens
 func (aliens Aliens) Len() int {
 	return len(aliens)
+}
+
+// ----- Unexported functions -----
+
+// set value of alien
+func (aliens Aliens) set(i int, alien *Alien) bool {
+	aliens[i] = alien
+	return true
+}
+
+// remove the pointer to the alien in the mapping and removes the entry
+func (aliens Aliens) remove(i int) bool {
+	if !aliens.Exists(i) {
+		return false
+	}
+	aliens.set(i, nil)
+	delete(aliens, i)
+	return true
 }
 
 // Alien structure
@@ -155,19 +231,21 @@ func NewAlien(city City) Alien {
 	}
 }
 
-// TODO
-// Move moves the alien from city A to city B if there's a path between them
-func (alien Alien) Move(direction Direction) bool {
-	// remove the alien from cityA
-	// Add the alien to cityB's aliens
-	// update this alien position
+// GetPosition of the city
+func (alien Alien) GetPosition() City {
+	return alien.position
+}
+
+// GetPosition of the city
+func (alien Alien) setPosition(city City) bool {
+	alien.position = city
 	return true
 }
 
 // Kill turns the alien into a dead alien
 func (alien Alien) Kill() bool {
 	alien.alive = false
-	return !alien.alive
+	return true
 }
 
 // IsAlive gets the current status of the alien
