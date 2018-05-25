@@ -1,17 +1,35 @@
-package main
+package cosmos
 
 import (
-	"reflect"
+	"fmt"
 )
+
+// ========== Cosmos ==========
+
+// Map represents the overall struct
+type Map struct {
+	cities map[string]City // Cities maps an city name to a City structure
+	aliens Aliens          // Array of aliens in the map. NOTE: I decided to
+	// set a reference to aliens directly in Map because otherwise you would
+	// have to iterate over each city' aliens
+}
+
+// CreateMap creates a new Galaxy
+func CreateMap() *Map {
+	return &Map{
+		cities: make(map[string]City),
+		aliens: InitAliens(),
+	}
+}
 
 // ========== City ==========
 
-// City definition
+// City struct definition
 type City struct {
-	name      string
-	roads     Roads
-	aliens    Aliens
-	destroyed bool
+	name      string // name of the city
+	roads     Roads  // map of road structs
+	aliens    Aliens // map of alien structs
+	destroyed bool   // boolean to check if the city is destroyed
 }
 
 // NewCity creates a new city
@@ -24,19 +42,24 @@ func NewCity(name string) City {
 	}
 }
 
+// Name returns the name of the city
+func (city City) Name() string {
+	return city.name
+}
+
 // GetRoad returns a pointer to the road in the desired direction
-func (city City) GetRoad(direction Direction) *Road {
+func (city City) GetRoad(direction Direction) (*Road, error) {
 	switch direction {
 	case North:
-		return city.roads[0]
+		return city.roads[0], nil
 	case South:
-		return city.roads[1]
+		return city.roads[1], nil
 	case East:
-		return city.roads[2]
+		return city.roads[2], nil
 	case West:
-		return city.roads[3]
+		return city.roads[3], nil
 	default:
-		return nil
+		return nil, fmt.Errorf("Invalid direction: %v", direction)
 	}
 }
 
@@ -58,27 +81,40 @@ func (city City) HasFight() bool {
 }
 
 // AddAlien adds an alient to the mapping
-func (city City) AddAlien(alien *Alien) bool {
+func (city City) AddAlien(alien *Alien) error {
 	if !alien.IsAlive() {
-		return false
+		return fmt.Errorf("Alien is not alive")
 	}
-
-	return true
+	var id = alien.ID()
+	var res = city.aliens.Set(id, alien)
+	return res
 }
 
-// RemoveAlien removes an alien from the set
-func (city City) RemoveAlien(i int) bool {
-	return city.aliens.remove(i)
+// RemoveAlien removes an alien from the set of aliens
+func (city City) RemoveAlien(id int) error {
+	return city.aliens.remove(id)
 }
 
 // ========== Roads ==========
 
-// Roads is a set of 4 roads, one for each direction
+// Roads is a set of 4 roads, one for each direction:
+// North, South, East, West
 type Roads [4]*Road
 
 // InitRoads initializes an empty road array of size 4
 func InitRoads() Roads {
 	return [4]*Road{}
+}
+
+// AvailableRoads filters all roads that are not destroyed from a set
+func (roads Roads) AvailableRoads() []*Road {
+	var availableRoads = []*Road{}
+	for _, road := range roads {
+		if road.Available() {
+			availableRoads = append(availableRoads, road)
+		}
+	}
+	return availableRoads
 }
 
 // Destroy a single road in a given direction
@@ -102,28 +138,32 @@ func (roads Roads) Destroy(dir Direction) bool {
 }
 
 // DestroyAll destroys all the roads of a city
-func (roads Roads) DestroyAll() bool {
+func (roads Roads) DestroyAll() error {
 	for _, road := range roads {
-		var isDestroyed = road.Destroy()
-		if !isDestroyed {
-			return false
+		var err = road.Destroy()
+		if err != nil {
+			return err
 		}
 		road = nil
 	}
-	return true
+	return nil
 }
 
 // ========== Direction ==========
 
-// Direction nolint is one of [N, S, E, W]
+// Direction is one of [N, S, E, W]
 type Direction string
 
 const (
-	// nolint
-	North     Direction = "North"
-	South     Direction = "South"
-	East      Direction = "East"
-	West      Direction = "West"
+	// North direction
+	North Direction = "north"
+	// South direction
+	South Direction = "south"
+	// East direction
+	East Direction = "east"
+	// West direction
+	West Direction = "west"
+	// Destroyed city is evaluated as an empty string
 	Destroyed Direction = ""
 )
 
@@ -131,17 +171,19 @@ const (
 
 // Road struct definition
 type Road struct {
-	origin      *City
-	direction   Direction
-	destination *City
+	origin      *City     // origin city
+	direction   Direction // direction is one of the (N, S, E, W) directions
+	destination *City     // destination city
+	available   bool      // available road to move
 }
 
-// NewRoad creates a new Road
+// NewRoad creates a new Road instance
 func NewRoad(cityA *City, dir Direction, cityB *City) Road {
 	return Road{
 		origin:      cityA,
 		direction:   dir,
 		destination: cityB,
+		available:   true,
 	}
 }
 
@@ -156,22 +198,8 @@ func (road Road) Destination() *City {
 }
 
 // GetDirection gets the current direction of the road (i.e. from origin to destination)
-func (road Road) GetDirection() string {
-	switch road.direction {
-	case North:
-		return "North"
-	case South:
-		return "South"
-	case East:
-		return "East"
-	case West:
-		return "West"
-	case Destroyed:
-		return ""
-	default:
-		errMsg := "Unrecognized Direction type: " + reflect.TypeOf(road.direction).Name()
-		return errMsg
-	}
+func (road Road) GetDirection() Direction {
+	return road.direction
 }
 
 // OppositeDirection gets the opossite direction of the road (i.e. from destination to origin)
@@ -191,11 +219,20 @@ func (road Road) OppositeDirection() Direction {
 }
 
 // Destroy destroys the road
-func (road Road) Destroy() bool {
-	road.direction = Destroyed
-	road.origin = nil
-	road.destination = nil
-	return true
+func (road Road) Destroy() error {
+	if !road.Available() {
+		fmt.Errorf("Road is currently destroyed")
+	}
+	road.available = false
+	return nil
+}
+
+// Available checks if the road is not destroyed
+func (road Road) Available() bool {
+	if road.available {
+		return true
+	}
+	return false
 }
 
 // ========== Aliens ==========
@@ -205,26 +242,28 @@ func (road Road) Destroy() bool {
 type Aliens map[int]*Alien
 
 // InitAliens initializes an empty aliens map
+// NOTE: the benefit of using init over make(map[int]*Alien) is that it returns
+// a type Aliens struct
 func InitAliens() Aliens {
 	return map[int]*Alien{}
 }
 
-// AddAlien adds a new alien to the map
-func (aliens Aliens) AddAlien(i int, alien *Alien) bool {
+// Set adds a new alien to the map
+func (aliens Aliens) Set(i int, alien *Alien) error {
 	if aliens.Exists(i) {
-		return false
+		return fmt.Errorf("Alien %v already exists", i)
 	}
 	aliens[i] = alien
-	return true
+	return nil
 }
 
 // Get alien value from the map
-func (aliens Aliens) Get(i int) *Alien {
-	alien, ok := aliens[i]
+func (aliens Aliens) Get(i int) (*Alien, error) {
+	var alien, ok = aliens[i]
 	if !ok {
-		return nil
+		return nil, fmt.Errorf("Couldn't find alien with id %v", i)
 	}
-	return alien
+	return alien, nil
 }
 
 // Exists checks if a given alien is on the map
@@ -234,14 +273,15 @@ func (aliens Aliens) Exists(i int) bool {
 }
 
 // KillAll kills every alien on the mapping
-func (aliens Aliens) KillAll() bool {
-	for _, alien := range aliens {
-		var isDead = alien.Kill()
-		if !isDead {
-			return false
+func (aliens Aliens) KillAll() error {
+	for i, alien := range aliens {
+		alien.Kill()
+		var err = aliens.remove(i)
+		if err == nil {
+			return err
 		}
 	}
-	return true
+	return nil
 }
 
 // Len returns the total amount of aliens
@@ -258,29 +298,35 @@ func (aliens Aliens) set(i int, alien *Alien) bool {
 }
 
 // remove the pointer to the alien in the mapping and removes the entry
-func (aliens Aliens) remove(i int) bool {
+func (aliens Aliens) remove(i int) error {
 	if !aliens.Exists(i) {
-		return false
+		return fmt.Errorf("Alien %v not found", i)
 	}
-	aliens.set(i, nil)
-	delete(aliens, i)
-	return true
+	aliens.set(i, nil) // set the value of the mapping to that Alien to nil
+	return nil
 }
 
 // ========== Alien ==========
 
 // Alien structure
 type Alien struct {
+	id       int
 	position City // current City where the alien is standing
 	alive    bool
 }
 
 // NewAlien creates a new alien
-func NewAlien(city City) Alien {
+func NewAlien(i int, city City) Alien {
 	return Alien{
+		id:       i,
 		position: city,
 		alive:    true,
 	}
+}
+
+// ID returns the id value of an alien
+func (alien Alien) ID() int {
+	return alien.id
 }
 
 // GetPosition of the city

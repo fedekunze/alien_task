@@ -2,6 +2,16 @@
 
 Golang coding task for Cosmos
 
+### Assumptions
+
+- Total number of aliens provided (`N`) is less than the total amount of cities
+- File provided can only have __.txt__ format
+- A fight happens at the moment that an alien moves to another city and encounters to another alien
+- When a city is destroyed, it:
+  - Destroys all the roads from it to other cities, as well as the roads from any other city to it. In particular, that means it deletes pointers to any `Road`
+  - Kills all the aliens in the destroyed city (sets their status to `alive = false`)
+
+
 ## Instalation
 
 To run the Alien app you'll have to previously download Go and set your `$GOPATH`.
