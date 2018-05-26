@@ -2,6 +2,7 @@ package cosmos
 
 import (
 	"fmt"
+	"strconv"
 )
 
 // ========== Cosmos ==========
@@ -20,6 +21,21 @@ func CreateMap() *Map {
 		cities: make(map[string]City),
 		aliens: InitAliens(),
 	}
+}
+
+// GetCity Gets a city from cities mapping
+func (m Map) GetCity(name string) (*City, error) {
+	var city, ok = m.cities[name]
+	if !ok {
+		return nil, fmt.Errorf("Couldn't find city %v", name)
+	}
+	return &city, nil
+}
+
+// SetCity Sets a city to mapping
+func (m Map) SetCity(city City) error {
+	m.cities[city.Name()] = city
+	return nil
 }
 
 // ========== City ==========
@@ -221,7 +237,7 @@ func (road Road) OppositeDirection() Direction {
 // Destroy destroys the road
 func (road Road) Destroy() error {
 	if !road.Available() {
-		fmt.Errorf("Road is currently destroyed")
+		return fmt.Errorf("Road is currently destroyed")
 	}
 	road.available = false
 	return nil
@@ -272,11 +288,27 @@ func (aliens Aliens) Exists(i int) bool {
 	return exists
 }
 
+// Kill a given alien from the map
+func (aliens Aliens) Kill(id int) error {
+	var alien, err = aliens.Get(id)
+	if err == nil {
+		return err
+	}
+	err = alien.Kill()
+	if err == nil {
+		return err
+	}
+	err = aliens.remove(id)
+	if err == nil {
+		return err
+	}
+	return nil
+}
+
 // KillAll kills every alien on the mapping
 func (aliens Aliens) KillAll() error {
-	for i, alien := range aliens {
-		alien.Kill()
-		var err = aliens.remove(i)
+	for i := 0; i < aliens.Len(); i++ {
+		var err = aliens.Kill(i)
 		if err == nil {
 			return err
 		}
@@ -335,15 +367,22 @@ func (alien Alien) GetPosition() City {
 }
 
 // GetPosition of the city
-func (alien Alien) setPosition(city City) bool {
+func (alien Alien) setPosition(city City) error {
+	var name = city.Name()
+	if alien.position.Name() == name {
+		return fmt.Errorf("Alien " + strconv.Itoa(alien.ID()) + " is already in city " + name)
+	}
 	alien.position = city
-	return true
+	return nil
 }
 
 // Kill turns the alien into a dead alien
-func (alien Alien) Kill() bool {
+func (alien Alien) Kill() error {
+	if !alien.IsAlive() {
+		return fmt.Errorf("Alien %v is already dead", alien.ID())
+	}
 	alien.alive = false
-	return true
+	return nil
 }
 
 // IsAlive gets the current status of the alien
