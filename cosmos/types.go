@@ -3,39 +3,36 @@ package cosmos
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 // ========== Cosmos ==========
 
-// Map represents the overall struct
+// Map represents the overall map structure with cities and aliens
 type Map struct {
-	cities map[string]City // Cities maps an city name to a City structure
-	aliens Aliens          // Array of aliens in the map. NOTE: I decided to
-	// set a reference to aliens directly in Map because otherwise you would
-	// have to iterate over each city' aliens
+	cities []*City // Array of cities in the map
+	aliens Aliens  // Map of aliens in the map.
 }
 
 // CreateMap creates a new Galaxy
 func CreateMap() *Map {
 	return &Map{
-		cities: make(map[string]City),
+		cities: []*City{},
 		aliens: InitAliens(),
 	}
 }
 
 // GetCity Gets a city from cities mapping
-func (m Map) GetCity(name string) (*City, error) {
-	var city, ok = m.cities[name]
-	if !ok {
-		return nil, fmt.Errorf("Couldn't find city %v", name)
+func (m *Map) GetCity(i int) (*City, error) {
+	if i < len(m.cities) {
+		return m.cities[i], nil
 	}
-	return &city, nil
+	return nil, fmt.Errorf("Couldn't find city with id %v", i)
 }
 
 // SetCity Sets a city to mapping
-func (m Map) SetCity(city City) error {
-	m.cities[city.Name()] = city
-	return nil
+func (m *Map) SetCity(city *City) {
+	m.cities = append(m.cities, city)
 }
 
 // ========== City ==========
@@ -122,6 +119,23 @@ func InitRoads() Roads {
 	return [4]*Road{}
 }
 
+// AddRoad adds a road to its corresponding position in the array
+func (roads Roads) AddRoad(road *Road) error {
+	var dir = road.GetDirection()
+	if dir == North {
+		roads[0] = road
+	} else if dir == South {
+		roads[1] = road
+	} else if dir == East {
+		roads[2] = road
+	} else if dir == West {
+		roads[3] = road
+	} else {
+		return fmt.Errorf("Invalid direction: %v", dir)
+	}
+	return nil
+}
+
 // AvailableRoads filters all roads that are not destroyed from a set
 func (roads Roads) AvailableRoads() []*Road {
 	var availableRoads = []*Road{}
@@ -182,6 +196,25 @@ const (
 	// Destroyed city is evaluated as an empty string
 	Destroyed Direction = ""
 )
+
+// StrToDir converts string to Direction type
+func StrToDir(str string) (Direction, error) {
+	str = strings.ToLower(str)
+	switch str {
+	case "north":
+		return North, nil
+	case "south":
+		return South, nil
+	case "east":
+		return East, nil
+	case "west":
+		return West, nil
+	case "":
+		return Destroyed, nil
+	default:
+		return "", fmt.Errorf("String %v is not a valid direction", str)
+	}
+}
 
 // ========== Road ==========
 
@@ -255,13 +288,13 @@ func (road Road) Available() bool {
 
 // Aliens is a set of aliens
 // NOTE: I used a map for constant addition and deletion of values
-type Aliens map[int]*Alien
+type Aliens []*Alien
 
 // InitAliens initializes an empty aliens map
 // NOTE: the benefit of using init over make(map[int]*Alien) is that it returns
 // a type Aliens struct
 func InitAliens() Aliens {
-	return map[int]*Alien{}
+	return []*Alien{}
 }
 
 // Set adds a new alien to the map
@@ -275,31 +308,32 @@ func (aliens Aliens) Set(i int, alien *Alien) error {
 
 // Get alien value from the map
 func (aliens Aliens) Get(i int) (*Alien, error) {
-	var alien, ok = aliens[i]
-	if !ok {
-		return nil, fmt.Errorf("Couldn't find alien with id %v", i)
+	if aliens.Exists(i) {
+		return aliens[i], nil
 	}
-	return alien, nil
+	return nil, fmt.Errorf("Couldn't find alien with id %v", i)
 }
 
 // Exists checks if a given alien is on the map
 func (aliens Aliens) Exists(i int) bool {
-	_, exists := aliens[i]
-	return exists
+	if i < len(aliens) {
+		return true
+	}
+	return false
 }
 
 // Kill a given alien from the map
 func (aliens Aliens) Kill(id int) error {
 	var alien, err = aliens.Get(id)
-	if err == nil {
+	if err != nil {
 		return err
 	}
 	err = alien.Kill()
-	if err == nil {
+	if err != nil {
 		return err
 	}
 	err = aliens.remove(id)
-	if err == nil {
+	if err != nil {
 		return err
 	}
 	return nil
@@ -309,7 +343,7 @@ func (aliens Aliens) Kill(id int) error {
 func (aliens Aliens) KillAll() error {
 	for i := 0; i < aliens.Len(); i++ {
 		var err = aliens.Kill(i)
-		if err == nil {
+		if err != nil {
 			return err
 		}
 	}
