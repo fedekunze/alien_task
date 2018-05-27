@@ -33,12 +33,13 @@ var testCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(runCmd)
 	rootCmd.AddCommand(testCmd)
-	rootCmd.PersistentFlags().StringVarP(&N, "N", "N", "", "Number of aliens placed in the map")
-	runCmd.Flags().StringVarP(&file, "file", "f", "example.txt", "Full path to the .txt file containing the map")
-	runCmd.MarkFlagRequired("file")
-	runCmd.MarkFlagRequired("N")
-	viper.BindPFlag("file", runCmd.Flags().Lookup("file"))
-	viper.BindPFlag("N", runCmd.Flags().Lookup("N"))
+	rootCmd.PersistentFlags().IntVarP(&N, "N", "N", 10, "Number of aliens placed in the map")
+	rootCmd.Flags().StringVarP(&file, "file", "f", "example.txt", "Full path to the .txt file containing the map")
+	rootCmd.MarkFlagRequired("file")
+	rootCmd.MarkFlagRequired("N")
+	testCmd.MarkFlagRequired("N")
+	viper.BindPFlag("file", rootCmd.Flags().Lookup("file"))
+	viper.BindPFlag("N", rootCmd.Flags().Lookup("N"))
+	viper.BindPFlag("N", testCmd.Flags().Lookup("N"))
 }
