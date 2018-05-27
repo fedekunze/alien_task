@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/fedekunze/cmd"
+	"github.com/fedekunze/alien_task/cmd"
 )
 
 func main() {
