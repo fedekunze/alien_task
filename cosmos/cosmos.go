@@ -9,12 +9,13 @@ import (
 // Simulate simulates a battle of aliens
 func Simulate(m Map, aliensLeft int) error {
 	var round = 0 // number of times all the aliens have moved in the map
+
 	// Iterate over aliens until all of them are dead or
 	// each​ ​alien​ ​has​ ​moved​ ​at​ ​least​ ​10,000​ ​times
 	for aliensLeft > 0 || round < 10000 {
 		fmt.Println("––––––––––– Round " + strconv.Itoa(round) + " –––––––––––")
 		fmt.Println()
-		for i, alien := range m.aliens {
+		for i, alien := range m.Aliens {
 			// check if alien is alive
 			if alien.IsAlive() {
 				var currentCity = alien.GetPosition()
@@ -44,13 +45,12 @@ func Simulate(m Map, aliensLeft int) error {
 func move(alien *Alien, direction Direction) (*City, error) {
 	// get destination city from the destination value
 	var currentCity = alien.GetPosition()
-	// TODO random select road
 	var road, err = currentCity.GetRoad(direction)
 	if err != nil {
 		return nil, err
 	}
 	var destination = road.Destination()
-	if !road.Available() || destination == nil {
+	if !road.IsAvailable() || destination == nil {
 		return nil, fmt.Errorf("Road to" + destination.Name() +
 			" is already destroyed")
 	}

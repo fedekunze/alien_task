@@ -10,8 +10,8 @@ import (
 
 // Map represents the overall map structure with cities and aliens
 type Map struct {
-	cities []*City // Array of cities in the map
-	aliens Aliens  // Map of aliens in the map.
+	Cities []*City // Array of cities in the map
+	Aliens Aliens  // Map of aliens in the map.
 }
 
 // CreateMap creates a new Galaxy
@@ -24,7 +24,7 @@ func CreateMap() *Map {
 
 // GetCity Gets a city from cities mapping
 func (m *Map) GetCity(i int) (*City, error) {
-	if i < len(m.cities) {
+	if i < len(m.Cities) {
 		return m.Cities[i], nil
 	}
 	return nil, fmt.Errorf("Couldn't find city with id %v", i)
@@ -32,7 +32,7 @@ func (m *Map) GetCity(i int) (*City, error) {
 
 // SetCity Sets a city to mapping
 func (m *Map) SetCity(city *City) {
-	m.cities = append(m.Cities, city)
+	m.Cities = append(m.Cities, city)
 }
 
 // ========== City ==========
@@ -49,8 +49,8 @@ type City struct {
 func NewCity(name string) City {
 	return City{
 		name:      name,
-		Roads:     InitRoads(),
-		Aliens:    InitAliens(),
+		roads:     InitRoads(),
+		aliens:    InitAliens(),
 		destroyed: false,
 	}
 }
@@ -60,17 +60,22 @@ func (city City) Name() string {
 	return city.name
 }
 
+// GetRoads returns all roads from the city
+func (city City) GetRoads() Roads {
+	return city.roads
+}
+
 // GetRoad returns a pointer to the road in the desired direction
 func (city City) GetRoad(direction Direction) (*Road, error) {
 	switch direction {
 	case North:
-		return city.Roads[0], nil
+		return city.roads[0], nil
 	case South:
-		return city.Roads[1], nil
+		return city.roads[1], nil
 	case East:
-		return city.Roads[2], nil
+		return city.roads[2], nil
 	case West:
-		return city.Roads[3], nil
+		return city.roads[3], nil
 	default:
 		return nil, fmt.Errorf("Invalid direction: %v", direction)
 	}
@@ -83,7 +88,7 @@ func (city City) IsDestroyed() bool {
 
 // CountAliens returns the total amount of aliens for the given city
 func (city City) CountAliens() int {
-	return city.Aliens.Len()
+	return city.aliens.Len()
 }
 
 // HasFight checks if there's a fight in the current move
@@ -99,13 +104,13 @@ func (city City) AddAlien(alien *Alien) error {
 		return fmt.Errorf("Alien is not alive")
 	}
 	var id = alien.ID()
-	var res = city.Aliens.Set(id, alien)
+	var res = city.aliens.Set(id, alien)
 	return res
 }
 
 // RemoveAlien removes an alien from the set of aliens
 func (city City) RemoveAlien(id int) error {
-	return city.Aliens.remove(id)
+	return city.aliens.remove(id)
 }
 
 // ========== Roads ==========
@@ -269,7 +274,7 @@ func (road Road) OppositeDirection() Direction {
 
 // Destroy destroys the road
 func (road Road) Destroy() error {
-	if !road.Available() {
+	if !road.IsAvailable() {
 		return fmt.Errorf("Road is currently destroyed")
 	}
 	road.available = false
