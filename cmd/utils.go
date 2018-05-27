@@ -17,47 +17,47 @@ func Init(filename string, totalAliens int) error {
 	var m = cosmos.CreateMap()
 	fmt.Println("Reading file...")
 	fmt.Println()
-	err = ReadMap(filename, m)
+	err := ReadMap(filename, m)
 	if err != nil {
 		return err
 	}
 	fmt.Println("Placing aliens in cities...")
-	var totalCities = len(m.cities)
+	var totalCities = len(m.Cities)
 
 	// // select a random city from the set to add one
 	for index := 0; index < totalAliens; index++ {
-		var randCity = rand.Intn(totalCities)
-		cities[randCity]
-		var alien = NewAlien(index, city)
+		randCity := rand.Intn(totalCities)
+		city := m.Cities[randCity]
+		alien := cosmos.NewAlien(index, city)
 		city.AddAlien(alien)
-		m.aliens.Set(index, alien)
+		m.Aliens.Set(index, alien)
 	}
 
 	// 	//
 	fmt.Println("Running simulation...")
-	var err = cosmos.Simulate(m, totalAliens)
+	err = cosmos.Simulate(m, totalAliens)
 	if err != nil {
 		return err
 	}
 	fmt.Println("Simulation ended")
 	fmt.Println("All aliens where destroyed. Printing results:")
 	fmt.Println()
-	PrettyPrint(m)
+	PrettyPrint(*m)
 	return nil
 }
 
 // ParseLine parses each line from the file and creates a city
-func ParseLine(line string, m *Map) error {
+func ParseLine(line string, m *cosmos.Map) error {
 	words := strings.Split(line, " ")
 	city := cosmos.NewCity(words[0])
 	for i := 1; i < len(words); i++ {
-		path := strings.Split(word[i], "=")
+		path := strings.Split(words[i], "=")
 		dir, err := cosmos.StrToDir(path[0])
 		if err != nil {
 			return err
 		}
 		road := cosmos.NewRoad(city, dir, path[1])
-		err = city.roads.AddRoad(*road)
+		err = city.Roads.AddRoad(*road)
 		if err != nil {
 			return err
 		}
@@ -67,7 +67,7 @@ func ParseLine(line string, m *Map) error {
 }
 
 // ReadMap reads a map from a .txt file
-func ReadMap(filename string, m *Map) error {
+func ReadMap(filename string, m *cosmos.Map) error {
 	// Check if file is txt
 	var extension = filepath.Ext(filename)
 	if !strings.Contains(extension, ".txt") {

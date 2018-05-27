@@ -17,22 +17,22 @@ type Map struct {
 // CreateMap creates a new Galaxy
 func CreateMap() *Map {
 	return &Map{
-		cities: []*City{},
-		aliens: InitAliens(),
+		Cities: []*City{},
+		Aliens: InitAliens(),
 	}
 }
 
 // GetCity Gets a city from cities mapping
 func (m *Map) GetCity(i int) (*City, error) {
 	if i < len(m.cities) {
-		return m.cities[i], nil
+		return m.Cities[i], nil
 	}
 	return nil, fmt.Errorf("Couldn't find city with id %v", i)
 }
 
 // SetCity Sets a city to mapping
 func (m *Map) SetCity(city *City) {
-	m.cities = append(m.cities, city)
+	m.cities = append(m.Cities, city)
 }
 
 // ========== City ==========
@@ -49,8 +49,8 @@ type City struct {
 func NewCity(name string) City {
 	return City{
 		name:      name,
-		roads:     InitRoads(),
-		aliens:    InitAliens(),
+		Roads:     InitRoads(),
+		Aliens:    InitAliens(),
 		destroyed: false,
 	}
 }
@@ -64,13 +64,13 @@ func (city City) Name() string {
 func (city City) GetRoad(direction Direction) (*Road, error) {
 	switch direction {
 	case North:
-		return city.roads[0], nil
+		return city.Roads[0], nil
 	case South:
-		return city.roads[1], nil
+		return city.Roads[1], nil
 	case East:
-		return city.roads[2], nil
+		return city.Roads[2], nil
 	case West:
-		return city.roads[3], nil
+		return city.Roads[3], nil
 	default:
 		return nil, fmt.Errorf("Invalid direction: %v", direction)
 	}
@@ -83,7 +83,7 @@ func (city City) IsDestroyed() bool {
 
 // CountAliens returns the total amount of aliens for the given city
 func (city City) CountAliens() int {
-	return city.aliens.Len()
+	return city.Aliens.Len()
 }
 
 // HasFight checks if there's a fight in the current move
@@ -99,13 +99,13 @@ func (city City) AddAlien(alien *Alien) error {
 		return fmt.Errorf("Alien is not alive")
 	}
 	var id = alien.ID()
-	var res = city.aliens.Set(id, alien)
+	var res = city.Aliens.Set(id, alien)
 	return res
 }
 
 // RemoveAlien removes an alien from the set of aliens
 func (city City) RemoveAlien(id int) error {
-	return city.aliens.remove(id)
+	return city.Aliens.remove(id)
 }
 
 // ========== Roads ==========
