@@ -10,29 +10,37 @@ import (
 
 // Map represents the overall map structure with cities and aliens
 type Map struct {
-	Cities []*City // Array of cities in the map
-	Aliens Aliens  // Map of aliens in the map.
+	cities       map[string]*City // Array of cities in the map
+	Aliens       Aliens           // Map of aliens in the map.
+	CitiesIDName []string
 }
 
 // CreateMap creates a new Galaxy
 func CreateMap() *Map {
 	return &Map{
-		Cities: []*City{},
-		Aliens: InitAliens(),
+		cities:       make(map[string]*City),
+		Aliens:       InitAliens(),
+		CitiesIDName: []string{},
 	}
 }
 
 // GetCity Gets a city from cities mapping
-func (m *Map) GetCity(i int) (*City, error) {
-	if i < len(m.Cities) {
-		return m.Cities[i], nil
+func (m *Map) GetCity(name string) (*City, error) {
+	var city, ok = m.cities[name]
+	if !ok {
+		return nil, fmt.Errorf("Couldn't find city %v", name)
 	}
-	return nil, fmt.Errorf("Couldn't find city with id %v", i)
+	return city, nil
 }
 
 // SetCity Sets a city to mapping
 func (m *Map) SetCity(city *City) {
-	m.Cities = append(m.Cities, city)
+	m.cities[city.Name()] = city
+}
+
+// CitiesLen return the total amount of cities in the map
+func (m *Map) CitiesLen() int {
+	return len(m.cities)
 }
 
 // ========== City ==========
@@ -66,19 +74,11 @@ func (city City) GetRoads() Roads {
 }
 
 // GetRoad returns a pointer to the road in the desired direction
-func (city City) GetRoad(direction Direction) (*Road, error) {
-	switch direction {
-	case North:
-		return city.roads[0], nil
-	case South:
-		return city.roads[1], nil
-	case East:
-		return city.roads[2], nil
-	case West:
-		return city.roads[3], nil
-	default:
-		return nil, fmt.Errorf("Invalid direction: %v", direction)
+func (city City) GetRoad(i int) (*Road, error) {
+	if i < 4 {
+		return city.roads[i], nil
 	}
+	return nil, fmt.Errorf("Invalid direction")
 }
 
 // IsDestroyed returns the current status of the city
@@ -111,6 +111,12 @@ func (city City) AddAlien(alien *Alien) error {
 // RemoveAlien removes an alien from the set of aliens
 func (city City) RemoveAlien(id int) error {
 	return city.aliens.remove(id)
+}
+
+// AddRoad adds a new road to the city
+func (city City) AddRoad(road *Road) error {
+	res := city.roads.AddRoad(road)
+	return res
 }
 
 // ========== Roads ==========
@@ -201,6 +207,39 @@ const (
 	// Destroyed city is evaluated as an empty string
 	Destroyed Direction = ""
 )
+
+func (dir Direction) Value() (string, error) {
+	switch dir {
+	case North:
+		return "north", nil
+	case South:
+		return "south", nil
+	case East:
+		return "east", nil
+	case West:
+		return "west", nil
+	case Destroyed:
+		return "", nil
+	default:
+		return "", fmt.Errorf("String %v is not a valid direction", dir)
+	}
+}
+
+// IntValue gets the corresponding integer value in the array of roads
+func (dir Direction) IntValue() int {
+	switch dir {
+	case North:
+		return 0
+	case South:
+		return 1
+	case East:
+		return 2
+	case West:
+		return 3
+	default:
+		return -1
+	}
+}
 
 // StrToDir converts string to Direction type
 func StrToDir(str string) (Direction, error) {

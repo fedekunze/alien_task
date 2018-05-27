@@ -7,7 +7,7 @@ import (
 )
 
 // Simulate simulates a battle of aliens
-func Simulate(m Map, aliensLeft int) error {
+func Simulate(m *Map, aliensLeft int) error {
 	var round = 0 // number of times all the aliens have moved in the map
 
 	// Iterate over aliens until all of them are dead or
@@ -18,13 +18,17 @@ func Simulate(m Map, aliensLeft int) error {
 		for i, alien := range m.Aliens {
 			// check if alien is alive
 			if alien.IsAlive() {
-				var currentCity = alien.GetPosition()
+				currentCity := alien.GetPosition()
 				// select a valid direction to move from alien current city
-				var availableRoads = currentCity.roads.AvailableRoads()
-				var dir = rand.Intn(len(availableRoads))
-				var direction = availableRoads[dir].GetDirection()
+				availableRoads := currentCity.roads.AvailableRoads()
+				dir := rand.Intn(len(availableRoads))
+				direction := availableRoads[dir].GetDirection()
+				intDir := direction.IntValue()
+				if intDir == -1 {
+					return fmt.Errorf("Direction is destroyed or nil")
+				}
 				// move
-				var dest, err = move(alien, direction)
+				dest, err := move(alien, intDir)
 				if err != nil {
 					return err
 				}
@@ -42,7 +46,7 @@ func Simulate(m Map, aliensLeft int) error {
 }
 
 // Move moves the alien from origin to a random destination if there's a path between them
-func move(alien *Alien, direction Direction) (*City, error) {
+func move(alien *Alien, direction int) (*City, error) {
 	// get destination city from the destination value
 	var currentCity = alien.GetPosition()
 	var road, err = currentCity.GetRoad(direction)

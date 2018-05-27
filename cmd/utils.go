@@ -22,15 +22,18 @@ func Init(filename string, totalAliens int) error {
 		return err
 	}
 	fmt.Println("Placing aliens in cities...")
-	var totalCities = len(m.Cities)
 
 	// // select a random city from the set to add one
 	for index := 0; index < totalAliens; index++ {
-		randCity := rand.Intn(totalCities)
-		city := m.Cities[randCity]
-		alien := cosmos.NewAlien(index, city)
-		city.AddAlien(alien)
-		m.Aliens.Set(index, alien)
+		randCity := rand.Intn(m.CitiesLen())
+		cityName := m.CitiesIDName[randCity]
+		city, err := m.GetCity(cityName)
+		if err != nil {
+			return nil
+		}
+		alien := cosmos.NewAlien(index, *city)
+		city.AddAlien(&alien)
+		m.Aliens.Set(index, &alien)
 	}
 
 	// 	//
@@ -49,21 +52,32 @@ func Init(filename string, totalAliens int) error {
 // ParseLine parses each line from the file and creates a city
 func ParseLine(line string, m *cosmos.Map) error {
 	words := strings.Split(line, " ")
-	city := cosmos.NewCity(words[0])
+	city, err := m.GetCity(words[0])
+	if err != nil {
+		city = cosmos.NewCity(words[0])
+		m.SetCity(city)
+		m.CitiesIDName = append(m.CitiesIdName, words[0])
+	}
 	for i := 1; i < len(words); i++ {
 		path := strings.Split(words[i], "=")
 		dir, err := cosmos.StrToDir(path[0])
 		if err != nil {
 			return err
 		}
-		road := cosmos.NewRoad(city, dir, path[1])
-		err = city.Roads.AddRoad(*road)
+		// check if city with name == path[1] exists
+		destCity, err := m.GetCity(path[1])
+		if err != nil {
+			destCity = cosmos.NewCity(path[1])
+			m.SetCity(destCity)
+			m.CitiesIDName = append(m.CitiesIdName, path[1])
+		}
+		road := cosmos.NewRoad(&city, dir, destCity)
+		err = city.AddRoad(*road)
 		if err != nil {
 			return err
 		}
 	}
-	err = m.SetCity(city)
-	return err
+	return nil
 }
 
 // ReadMap reads a map from a .txt file
@@ -75,7 +89,7 @@ func ReadMap(filename string, m *cosmos.Map) error {
 	}
 	// Get filename from absolute path
 	if filepath.IsAbs(filename) {
-		_, filename = filepath.Split(path)
+		_, filename = filepath.Split(filename)
 	}
 
 	file, err := os.Open(filename)
@@ -105,15 +119,15 @@ func ReadMap(filename string, m *cosmos.Map) error {
 func ConcatRoads(road *cosmos.Road, line string) string {
 	var direction = road.GetDirection()
 	var destination = road.Destination().Name()
-	return line + " " + direction + "=" + destination
+	return line + " " + direction.Value() + "=" + destination
 }
 
 // PrettyPrint prints the state of the cosmos
 func PrettyPrint(m cosmos.Map) {
-	for _, city := range m.cities {
-		var newline = city.Name()
+	for i := 0; i < m.CitiesLen(); i++ {
+		var newline = m.cities[i].Name()
 		for dir := 0; dir < 4; dir++ {
-			var road = city.roads[dir]
+			var road = city.GetRoad(dir)
 			newline = ConcatRoads(road, newline)
 		}
 		fmt.Println(newline)
