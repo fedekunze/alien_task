@@ -56,7 +56,7 @@ func ParseLine(line string, m *cosmos.Map) error {
 	if err != nil {
 		city = cosmos.NewCity(words[0])
 		m.SetCity(city)
-		m.CitiesIDName = append(m.CitiesIdName, words[0])
+		m.CitiesIDName = append(m.CitiesIDName, words[0])
 	}
 	for i := 1; i < len(words); i++ {
 		path := strings.Split(words[i], "=")

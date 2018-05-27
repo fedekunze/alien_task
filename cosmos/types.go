@@ -25,7 +25,7 @@ func CreateMap() *Map {
 }
 
 // GetCity Gets a city from cities mapping
-func (m *Map) GetCity(name string) (*City, error) {
+func (m Map) GetCity(name string) (*City, error) {
 	var city, ok = m.cities[name]
 	if !ok {
 		return nil, fmt.Errorf("Couldn't find city %v", name)
@@ -39,7 +39,7 @@ func (m *Map) SetCity(city *City) {
 }
 
 // CitiesLen return the total amount of cities in the map
-func (m *Map) CitiesLen() int {
+func (m Map) CitiesLen() int {
 	return len(m.cities)
 }
 
@@ -69,8 +69,8 @@ func (city City) Name() string {
 }
 
 // GetRoads returns all roads from the city
-func (city City) GetRoads() Roads {
-	return city.roads
+func (city City) GetRoads() *Roads {
+	return &city.roads
 }
 
 // GetRoad returns a pointer to the road in the desired direction
@@ -99,7 +99,7 @@ func (city City) HasFight() bool {
 }
 
 // AddAlien adds an alient to the mapping
-func (city City) AddAlien(alien *Alien) error {
+func (city *City) AddAlien(alien *Alien) error {
 	if !alien.IsAlive() {
 		return fmt.Errorf("Alien is not alive")
 	}
@@ -109,12 +109,12 @@ func (city City) AddAlien(alien *Alien) error {
 }
 
 // RemoveAlien removes an alien from the set of aliens
-func (city City) RemoveAlien(id int) error {
+func (city *City) RemoveAlien(id int) error {
 	return city.aliens.remove(id)
 }
 
 // AddRoad adds a new road to the city
-func (city City) AddRoad(road *Road) error {
+func (city *City) AddRoad(road *Road) error {
 	res := city.roads.AddRoad(road)
 	return res
 }
@@ -131,7 +131,7 @@ func InitRoads() Roads {
 }
 
 // AddRoad adds a road to its corresponding position in the array
-func (roads Roads) AddRoad(road *Road) error {
+func (roads *Roads) AddRoad(road *Road) error {
 	var dir = road.GetDirection()
 	if dir == North {
 		roads[0] = road
@@ -148,7 +148,7 @@ func (roads Roads) AddRoad(road *Road) error {
 }
 
 // AvailableRoads filters all roads that are not destroyed from a set
-func (roads Roads) AvailableRoads() []*Road {
+func (roads *Roads) AvailableRoads() []*Road {
 	var availableRoads = []*Road{}
 	for _, road := range roads {
 		if road.IsAvailable() {
@@ -271,8 +271,8 @@ type Road struct {
 }
 
 // NewRoad creates a new Road instance
-func NewRoad(cityA *City, dir Direction, cityB *City) Road {
-	return Road{
+func NewRoad(cityA *City, dir Direction, cityB *City) *Road {
+	return &Road{
 		origin:      cityA,
 		direction:   dir,
 		destination: cityB,
@@ -312,7 +312,7 @@ func (road Road) OppositeDirection() Direction {
 }
 
 // Destroy destroys the road
-func (road Road) Destroy() error {
+func (road *Road) Destroy() error {
 	if !road.IsAvailable() {
 		return fmt.Errorf("Road is currently destroyed")
 	}
@@ -423,8 +423,8 @@ type Alien struct {
 }
 
 // NewAlien creates a new alien
-func NewAlien(i int, city City) Alien {
-	return Alien{
+func NewAlien(i int, city City) *Alien {
+	return &Alien{
 		id:       i,
 		position: city,
 		alive:    true,
@@ -442,7 +442,7 @@ func (alien Alien) GetPosition() City {
 }
 
 // GetPosition of the city
-func (alien Alien) setPosition(city City) error {
+func (alien *Alien) setPosition(city City) error {
 	var name = city.Name()
 	if alien.position.Name() == name {
 		return fmt.Errorf("Alien " + strconv.Itoa(alien.ID()) + " is already in city " + name)
@@ -452,7 +452,7 @@ func (alien Alien) setPosition(city City) error {
 }
 
 // Kill turns the alien into a dead alien
-func (alien Alien) Kill() error {
+func (alien *Alien) Kill() error {
 	if !alien.IsAlive() {
 		return fmt.Errorf("Alien %v is already dead", alien.ID())
 	}
