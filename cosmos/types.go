@@ -140,7 +140,7 @@ func (roads Roads) AddRoad(road *Road) error {
 func (roads Roads) AvailableRoads() []*Road {
 	var availableRoads = []*Road{}
 	for _, road := range roads {
-		if road.Available() {
+		if road.IsAvailable() {
 			availableRoads = append(availableRoads, road)
 		}
 	}
@@ -276,12 +276,9 @@ func (road Road) Destroy() error {
 	return nil
 }
 
-// Available checks if the road is not destroyed
-func (road Road) Available() bool {
-	if road.available {
-		return true
-	}
-	return false
+// IsAvailable checks if the road is not destroyed
+func (road Road) IsAvailable() bool {
+	return road.available
 }
 
 // ========== Aliens ==========
