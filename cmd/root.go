@@ -11,7 +11,7 @@ import (
 var file string
 var N int
 
-var rootCmd = &cobra.Command{
+var RootCmd = &cobra.Command{
 	Use:   "aliens",
 	Short: "Run simulation of a battle of aliens",
 	Run: func(cmd *cobra.Command, args []string) {
