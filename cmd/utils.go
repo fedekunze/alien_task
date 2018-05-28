@@ -69,10 +69,10 @@ func ParseLine(line string, m *cosmos.Map) error {
 		if err != nil {
 			destCity = cosmos.NewCity(path[1])
 			m.SetCity(destCity)
-			m.CitiesIDName = append(m.CitiesIdName, path[1])
+			m.CitiesIDName = append(m.CitiesIDName, path[1])
 		}
-		road := cosmos.NewRoad(*city, dir, destCity)
-		err = city.AddRoad(*road)
+		road := cosmos.NewRoad(city, dir, destCity)
+		err = city.AddRoad(road)
 		if err != nil {
 			return err
 		}

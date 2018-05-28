@@ -15,7 +15,7 @@ var rootCmd = &cobra.Command{
 	Use:   "aliens",
 	Short: "Run simulation of a battle of aliens",
 	Run: func(cmd *cobra.Command, args []string) {
-		err = Init(file, N)
+		err := Init(file, N)
 		if error != nil {
 			fmt.Println(err)
 			os.Exit(1)
