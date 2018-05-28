@@ -221,7 +221,7 @@ func (dir Direction) Value() (string, error) {
 	case Destroyed:
 		return "", nil
 	default:
-		return "", fmt.Errorf("String %v is not a valid direction", dir)
+		return "", fmt.Errorf("%v is not a valid direction", dir)
 	}
 }
 
