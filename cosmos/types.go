@@ -54,8 +54,8 @@ type City struct {
 }
 
 // NewCity creates a new city
-func NewCity(name string) City {
-	return City{
+func NewCity(name string) *City {
+	return &City{
 		name:      name,
 		roads:     InitRoads(),
 		aliens:    InitAliens(),

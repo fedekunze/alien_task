@@ -32,8 +32,8 @@ func Init(filename string, totalAliens int) error {
 			return nil
 		}
 		alien := cosmos.NewAlien(index, *city)
-		city.AddAlien(&alien)
-		m.Aliens.Set(index, &alien)
+		city.AddAlien(alien)
+		m.Aliens.Set(index, alien)
 	}
 
 	// 	//
@@ -54,7 +54,7 @@ func ParseLine(line string, m *cosmos.Map) error {
 	words := strings.Split(line, " ")
 	city, err := m.GetCity(words[0])
 	if err != nil {
-		city = cosmos.NewCity(words[0])
+		city := cosmos.NewCity(words[0])
 		m.SetCity(city)
 		m.CitiesIDName = append(m.CitiesIDName, words[0])
 	}
@@ -71,7 +71,7 @@ func ParseLine(line string, m *cosmos.Map) error {
 			m.SetCity(destCity)
 			m.CitiesIDName = append(m.CitiesIdName, path[1])
 		}
-		road := cosmos.NewRoad(&city, dir, destCity)
+		road := cosmos.NewRoad(*city, dir, destCity)
 		err = city.AddRoad(*road)
 		if err != nil {
 			return err
@@ -119,15 +119,17 @@ func ReadMap(filename string, m *cosmos.Map) error {
 func ConcatRoads(road *cosmos.Road, line string) string {
 	var direction = road.GetDirection()
 	var destination = road.Destination().Name()
-	return line + " " + direction.Value() + "=" + destination
+	strValue, _ := direction.Value()
+	return line + " " + strValue + "=" + destination
 }
 
 // PrettyPrint prints the state of the cosmos
 func PrettyPrint(m cosmos.Map) {
 	for i := 0; i < m.CitiesLen(); i++ {
-		var newline = m.cities[i].Name()
+		newline := m.CitiesIDName[i]
+		city, _ := m.GetCity(newline)
 		for dir := 0; dir < 4; dir++ {
-			var road = city.GetRoad(dir)
+			road, _ := city.GetRoad(dir)
 			newline = ConcatRoads(road, newline)
 		}
 		fmt.Println(newline)
