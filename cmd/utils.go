@@ -62,16 +62,17 @@ func ParseLine(line string, m *cosmos.Map) error {
 	for i := 1; i < len(words); i++ {
 		word := strings.TrimSpace(words[i])
 		path := strings.Split(word, "=")
-		dir, err := cosmos.StrToDir(path[0])
+		dir, err := cosmos.StrToDir(strings.TrimSpace(path[0]))
 		if err != nil {
 			return err
 		}
 		// check if city with name == path[1] exists
-		destCity, err := m.GetCity(path[1])
+		cityName := strings.TrimSpace(path[1])
+		destCity, err := m.GetCity(cityName)
 		if err != nil {
-			destCity = cosmos.NewCity(path[1])
+			destCity = cosmos.NewCity(cityName)
 			m.SetCity(destCity)
-			m.CitiesIDName = append(m.CitiesIDName, path[1])
+			m.CitiesIDName = append(m.CitiesIDName, cityName)
 		}
 		road := cosmos.NewRoad(city, dir, destCity)
 		err = city.AddRoad(road)

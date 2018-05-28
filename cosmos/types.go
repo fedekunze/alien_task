@@ -245,15 +245,16 @@ func (dir Direction) IntValue() int {
 func StrToDir(str string) (Direction, error) {
 	str = strings.ToLower(str)
 	fmt.Println(str)
-	if str == "north" {
+	switch str {
+	case "north":
 		return North, nil
-	} else if str == "south" {
+	case "south":
 		return South, nil
-	} else if str == "east" {
+	case "east":
 		return East, nil
-	} else if str == "west" {
+	case "west":
 		return West, nil
-	} else {
+	default:
 		return "", fmt.Errorf("String %v is not a valid direction", str)
 	}
 }
