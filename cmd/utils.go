@@ -27,8 +27,8 @@ func Init(filename string, totalAliens int) error {
 	for index := 0; index < totalAliens; index++ {
 		randCity := rand.Intn(m.CitiesLen())
 		cityName := m.CitiesIDName[randCity]
-		city, err := m.GetCity(cityName)
-		if err != nil {
+		city, er := m.GetCity(cityName)
+		if er != nil {
 			return nil
 		}
 		alien := cosmos.NewAlien(index, *city)
@@ -54,7 +54,7 @@ func ParseLine(line string, m *cosmos.Map) error {
 	words := strings.Split(line, " ")
 	city, err := m.GetCity(words[0])
 	if err != nil {
-		city := cosmos.NewCity(words[0])
+		city = cosmos.NewCity(words[0])
 		m.SetCity(city)
 		m.CitiesIDName = append(m.CitiesIDName, words[0])
 	}
@@ -88,10 +88,15 @@ func ReadMap(filename string, m *cosmos.Map) error {
 		return fmt.Errorf("File %v does not have .txt format", filename)
 	}
 	// Get filename from absolute path
-	if filepath.IsAbs(filename) {
-		_, filename = filepath.Split(filename)
+	var err error
+	fmt.Println(filename)
+	if !filepath.IsAbs(filename) {
+		filename, err = filepath.Abs(filename)
+		if err != nil {
+			return err
+		}
 	}
-
+	fmt.Println(filename)
 	file, err := os.Open(filename)
 	if err != nil {
 		return err

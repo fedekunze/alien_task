@@ -11,6 +11,7 @@ import (
 var file string
 var N int
 
+// RootCmd is the basic command for Aliens
 var RootCmd = &cobra.Command{
 	Use:   "aliens",
 	Short: "Run simulation of a battle of aliens",
