@@ -244,6 +244,7 @@ func (dir Direction) IntValue() int {
 // StrToDir converts string to Direction type
 func StrToDir(str string) (Direction, error) {
 	str = strings.ToLower(str)
+	str = strings.TrimSpace(str)
 	fmt.Println(str)
 	switch str {
 	case "north":
