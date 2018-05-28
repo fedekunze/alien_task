@@ -51,6 +51,7 @@ func Init(filename string, totalAliens int) error {
 
 // ParseLine parses each line from the file and creates a city
 func ParseLine(line string, m *cosmos.Map) error {
+	line = strings.TrimSpace(line)
 	words := strings.Split(line, " ")
 	city, err := m.GetCity(words[0])
 	if err != nil {
@@ -59,7 +60,8 @@ func ParseLine(line string, m *cosmos.Map) error {
 		m.CitiesIDName = append(m.CitiesIDName, words[0])
 	}
 	for i := 1; i < len(words); i++ {
-		path := strings.Split(words[i], "=")
+		word := strings.TrimSpace(words[i])
+		path := strings.Split(word, "=")
 		dir, err := cosmos.StrToDir(path[0])
 		if err != nil {
 			return err
@@ -96,7 +98,6 @@ func ReadMap(filename string, m *cosmos.Map) error {
 			return err
 		}
 	}
-	fmt.Println(filename)
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
