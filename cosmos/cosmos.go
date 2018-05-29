@@ -15,6 +15,7 @@ func Simulate(m *Map, aliensLeft int) error {
 	// each​ ​alien​ ​has​ ​moved​ ​at​ ​least​ ​10,000​ ​times
 	rand.Seed(time.Now().Unix())
 	for aliensLeft > 0 || round < 10000 {
+		fmt.Println()
 		fmt.Println("––––––––––– Round " + strconv.Itoa(round) + " –––––––––––")
 		fmt.Println()
 		for i, alien := range m.Aliens {
@@ -26,9 +27,12 @@ func Simulate(m *Map, aliensLeft int) error {
 					return fmt.Errorf("Alien hasn't been placed")
 				}
 				selectedRoad, err := currentCity.GetRoad(rand.Intn(4))
-				fmt.Println(currentCity)
 				for selectedRoad == nil {
 					selectedRoad, err = currentCity.GetRoad(rand.Intn(4))
+
+				}
+				if !selectedRoad.IsAvailable() {
+					return fmt.Errorf("City %v is destroyed", currentCity.Name())
 				}
 				direction := selectedRoad.GetDirection()
 				if direction == Destroyed {
@@ -36,7 +40,6 @@ func Simulate(m *Map, aliensLeft int) error {
 				}
 				intDir := direction.IntValue()
 				// move
-				fmt.Println("Moving alien " + strconv.Itoa(alien.ID()))
 				dest, err := move(alien, intDir)
 				if err != nil {
 					return err
