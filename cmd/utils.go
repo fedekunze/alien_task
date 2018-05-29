@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/fedekunze/alien_task/cosmos"
@@ -38,14 +39,14 @@ func Init(filename string, totalAliens int) error {
 
 	// 	//
 	fmt.Println("Running simulation...")
-	err = cosmos.Simulate(m, totalAliens)
+	aliensLeft, err := cosmos.Simulate(m, totalAliens)
 	if err != nil {
 		return err
 	}
-	fmt.Println("Simulation ended")
-	fmt.Println("All aliens where destroyed. Printing results:")
+	fmt.Println("SIMULATION ENDED")
+	fmt.Println("Aliens left : %v. Printing results:", strconv.Itoa(aliensLeft))
 	fmt.Println()
-	PrettyPrint(*m)
+	PrettyPrint(m)
 	return nil
 }
 
@@ -141,7 +142,7 @@ func ConcatRoads(road *cosmos.Road, line string) string {
 }
 
 // PrettyPrint prints the state of the cosmos
-func PrettyPrint(m cosmos.Map) {
+func PrettyPrint(m *cosmos.Map) {
 	for i := 0; i < m.CitiesLen(); i++ {
 		newline := m.CitiesIDName[i]
 		city, _ := m.GetCity(newline)

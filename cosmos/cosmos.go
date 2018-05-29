@@ -8,7 +8,7 @@ import (
 )
 
 // Simulate simulates a battle of aliens
-func Simulate(m *Map, aliensLeft int) error {
+func Simulate(m *Map, aliensLeft int) (int, error) {
 	var round = 0 // number of times all the aliens have moved in the map
 
 	// Iterate over aliens until all of them are dead or
@@ -21,7 +21,7 @@ func Simulate(m *Map, aliensLeft int) error {
 				currentCity := alien.GetPosition()
 				// select a valid direction to move from alien current city
 				if &currentCity == nil {
-					return fmt.Errorf("Alien hasn't been placed")
+					return -1, fmt.Errorf("Alien hasn't been placed")
 				}
 				selectedRoad, _ := currentCity.GetRoad(rand.Intn(4))
 
@@ -33,13 +33,13 @@ func Simulate(m *Map, aliensLeft int) error {
 				// }
 				direction := selectedRoad.GetDirection()
 				if direction == Destroyed {
-					return fmt.Errorf("City %v is destroyed", currentCity.Name())
+					return -1, fmt.Errorf("City %v is destroyed", currentCity.Name())
 				}
 				intDir := direction.IntValue()
 				// move
 				dest, err := move(alien, intDir)
 				if err != nil {
-					return err
+					return -1, err
 				}
 				// check if there is more than one alien in the city to fight
 				if dest.HasFight() {
@@ -51,7 +51,7 @@ func Simulate(m *Map, aliensLeft int) error {
 		}
 		round++
 	}
-	return nil
+	return aliensLeft, nil
 }
 
 // Move moves the alien from origin to a random destination if there's a path between them
