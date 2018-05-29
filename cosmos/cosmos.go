@@ -26,6 +26,7 @@ func Simulate(m *Map, aliensLeft int) error {
 					return fmt.Errorf("Alien hasn't been placed")
 				}
 				selectedRoad, err := currentCity.GetRoad(rand.Intn(4))
+				fmt.Println(currentCity)
 				for selectedRoad == nil {
 					selectedRoad, err = currentCity.GetRoad(rand.Intn(4))
 				}
@@ -35,6 +36,7 @@ func Simulate(m *Map, aliensLeft int) error {
 				}
 				intDir := direction.IntValue()
 				// move
+				fmt.Println("Moving alien " + strconv.Itoa(alien.ID()))
 				dest, err := move(alien, intDir)
 				if err != nil {
 					return err
