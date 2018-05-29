@@ -26,8 +26,10 @@ func Simulate(m *Map, aliensLeft int) (int, int, error) {
 				if &currentCity == nil {
 					return -1, -1, fmt.Errorf("Alien hasn't been placed")
 				}
+				if currentCity.GetRoads().AvailableRoads() == 0 {
+					continue
+				}
 				selectedRoad, _ := currentCity.GetRoad(rand.Intn(4))
-
 				for selectedRoad == nil || !selectedRoad.IsAvailable() {
 					selectedRoad, _ = currentCity.GetRoad(rand.Intn(4))
 				}

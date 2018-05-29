@@ -150,16 +150,16 @@ func (roads Roads) AddRoad(road *Road) (Roads, error) {
 	return roads, nil
 }
 
-// // AvailableRoads filters all roads that are not destroyed from a set
-// func (roads Roads) AvailableRoads() []*Road {
-// 	var availableRoads = []*Road{}
-// 	for i := 0; i < 4; i++ {
-// 		if roads[i].IsAvailable() {
-// 			availableRoads = append(availableRoads, roads[i])
-// 		}
-// 	}
-// 	return availableRoads
-// }
+// AvailableRoads filters all roads that are not destroyed from a set
+func (roads Roads) AvailableRoads() int {
+	avaliable := 0
+	for i := 0; i < 4; i++ {
+		if roads[i] != nil && roads[i].IsAvailable() {
+			avaliable++
+		}
+	}
+	return avaliable
+}
 
 // Destroy a single road in a given direction
 func (roads Roads) Destroy(dir Direction) (Roads, error) {
