@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"time"
 )
 
 // Simulate simulates a battle of aliens
@@ -12,6 +13,7 @@ func Simulate(m *Map, aliensLeft int) error {
 
 	// Iterate over aliens until all of them are dead or
 	// each​ ​alien​ ​has​ ​moved​ ​at​ ​least​ ​10,000​ ​times
+	rand.Seed(time.Now().Unix())
 	for aliensLeft > 0 || round < 10000 {
 		fmt.Println("––––––––––– Round " + strconv.Itoa(round) + " –––––––––––")
 		fmt.Println()
@@ -20,13 +22,18 @@ func Simulate(m *Map, aliensLeft int) error {
 			if alien.IsAlive() {
 				currentCity := alien.GetPosition()
 				// select a valid direction to move from alien current city
-				availableRoads := currentCity.roads.AvailableRoads()
-				dir := rand.Intn(len(availableRoads))
-				direction := availableRoads[dir].GetDirection()
-				intDir := direction.IntValue()
-				if intDir == -1 {
-					return fmt.Errorf("Direction is destroyed or nil")
+				if &currentCity == nil {
+					return fmt.Errorf("Alien hasn't been placed")
 				}
+				selectedRoad, err := currentCity.GetRoad(rand.Intn(4))
+				for selectedRoad == nil {
+					selectedRoad, err = currentCity.GetRoad(rand.Intn(4))
+				}
+				direction := selectedRoad.GetDirection()
+				if direction == Destroyed {
+					return fmt.Errorf("City %v is destroyed", currentCity.Name())
+				}
+				intDir := direction.IntValue()
 				// move
 				dest, err := move(alien, intDir)
 				if err != nil {
@@ -69,7 +76,7 @@ func move(alien *Alien, direction int) (*City, error) {
 		return nil, err
 	}
 	// update this alien position
-	err = alien.setPosition(*destination)
+	err = alien.setPosition(destination)
 	if err != nil {
 		return nil, err
 	}
@@ -77,37 +84,56 @@ func move(alien *Alien, direction int) (*City, error) {
 }
 
 // RemovePaths removes all the paths from the neighbour cities
-func removePaths(city *City) bool {
-	for _, road := range city.roads {
-		var opositeDir = road.OppositeDirection()
-		var destRoad = road.destination.roads
-		var res = destRoad.Destroy(opositeDir)
-		if !res {
-			return false
+func removePaths(city *City) error {
+	for i := 0; i < 4; i++ {
+		if city.roads[i] != nil {
+			opositeDir := city.roads[i].OppositeDirection()
+			destCity := city.roads[i].Destination()
+			if destCity == nil {
+				return fmt.Errorf("Destination city does not exist")
+			}
+			destRoads := destCity.GetRoads()
+			var roads, res = destRoads.Destroy(opositeDir)
+			if !res {
+				return fmt.Errorf("Invalid direction")
+			}
+			destCity.roads = roads
 		}
 	}
-	return true
+	return nil
 }
 
 // Fight destroys all the roads of the city and its aliens and
 // sets the state to destroyed
 func fight(alienID int, city *City) error {
+	_, Err := city.aliens.Get(alienID)
+	if Err != nil {
+		return Err
+	}
 	// Print fight between alienID and aliens in city
 	for i, alien := range city.aliens {
+		if alien.ID() == alienID {
+			continue
+		}
 		var msg = city.Name() + " ​has​ ​been​ ​destroyed​ ​by​ ​alien " + strconv.Itoa(alienID) +
 			"​ ​and​ ​alien​ " + strconv.Itoa(alien.ID()) + "!"
 		fmt.Println(msg)
-		var err = city.aliens.Kill(i) // destroy each alien in the city
+		aliens, err := city.aliens.Kill(i) // destroy each alien in the city
 		if err != nil {
 			return err
 		}
+		city.aliens = aliens
 	}
-	var err = city.aliens.Kill(alienID) // destroy the moving alien
+	aliens, err := city.aliens.Kill(alienID) // destroy the moving alien
 	if err != nil {
 		return err
 	}
+	city.aliens = aliens
 	// Remove paths from neighbour cities
-	removePaths(city)
+	err = removePaths(city)
+	if err != nil {
+		return fmt.Errorf("Couldn't delete destination roads")
+	}
 	err = city.roads.DestroyAll() // destroy all roads
 	if err != nil {
 		return err

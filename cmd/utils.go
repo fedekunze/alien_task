@@ -33,7 +33,7 @@ func Init(filename string, totalAliens int) error {
 		}
 		alien := cosmos.NewAlien(index, *city)
 		city.AddAlien(alien)
-		m.Aliens.Set(index, alien)
+		m.Aliens = append(m.Aliens, alien)
 	}
 
 	// 	//
