@@ -14,7 +14,7 @@ func Simulate(m *Map, aliensLeft int) error {
 	// Iterate over aliens until all of them are dead or
 	// each​ ​alien​ ​has​ ​moved​ ​at​ ​least​ ​10,000​ ​times
 	rand.Seed(time.Now().Unix())
-	for aliensLeft > 0 || round < 10000 {
+	for aliensLeft > 0 && round < 10000 {
 		fmt.Println()
 		fmt.Println("––––––––––– Round " + strconv.Itoa(round) + " –––––––––––")
 		fmt.Println()
