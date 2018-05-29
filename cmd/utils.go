@@ -148,7 +148,7 @@ func PrettyPrint(m *cosmos.Map) {
 		city, _ := m.GetCity(newline)
 		for dir := 0; dir < 4; dir++ {
 			road, _ := city.GetRoad(dir)
-			if road != nil && road.IsAvailable() {
+			if road != nil {
 				newline = ConcatRoads(road, newline)
 			}
 		}
