@@ -10,7 +10,7 @@ import (
 
 // TODO
 
-var totalAliens = 5
+var totalAliens = 6
 
 func TestFight(t *testing.T) {
 	city := NewCity("Foo")

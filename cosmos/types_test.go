@@ -91,7 +91,7 @@ func TestDestroyRoads(t *testing.T) {
 	assert.Equal(t, road, roads[0])
 	roads, err = roads.Destroy(northDir)
 	assert.Nil(t, err)
-	assert.Nil(t, roads[0])
+	assert.False(t, roads[0].IsAvailable())
 	assert.NotNil(t, roads[1])
 	// err = roads.DestroyAll()
 	// assert.Nil(t, err)

@@ -145,11 +145,11 @@ func PrettyPrint(m *cosmos.Map) {
 	for i := 0; i < m.CitiesLen(); i++ {
 		newline := m.CitiesIDName[i]
 		city, _ := m.GetCity(newline)
-		if city.IsDestroyed() {
+		if !city.IsDestroyed() {
 			for dir := 0; dir < 4; dir++ {
 				road, _ := city.GetRoad(dir)
 				if road != nil {
-					if !road.IsAvailable() {
+					if road.IsAvailable() {
 						newline = ConcatRoads(road, newline)
 					}
 				}
