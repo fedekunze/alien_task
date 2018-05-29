@@ -18,9 +18,9 @@ func TestFight(t *testing.T) {
 	alien2 := NewAlien(2, city)
 	city.AddAlien(alien1)
 	city.AddAlien(alien2)
-	err := fight(4, city)
+	err := fight(4, city, 1)
 	assert.Error(t, err)
-	err = fight(1, city)
+	err = fight(1, city, 2)
 	assert.Nil(t, err)
 }
 

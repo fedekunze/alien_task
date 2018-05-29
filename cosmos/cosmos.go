@@ -15,9 +15,6 @@ func Simulate(m *Map, aliensLeft int) error {
 	// each​ ​alien​ ​has​ ​moved​ ​at​ ​least​ ​10,000​ ​times
 	rand.Seed(time.Now().Unix())
 	for aliensLeft > 0 && round < 10000 {
-		fmt.Println()
-		fmt.Println("––––––––––– Round " + strconv.Itoa(round) + " –––––––––––")
-		fmt.Println()
 		for i, alien := range m.Aliens {
 			// check if alien is alive
 			if alien.IsAlive() {
@@ -26,14 +23,14 @@ func Simulate(m *Map, aliensLeft int) error {
 				if &currentCity == nil {
 					return fmt.Errorf("Alien hasn't been placed")
 				}
-				selectedRoad, err := currentCity.GetRoad(rand.Intn(4))
-				for selectedRoad == nil {
-					selectedRoad, err = currentCity.GetRoad(rand.Intn(4))
+				selectedRoad, _ := currentCity.GetRoad(rand.Intn(4))
 
+				for selectedRoad == nil || !selectedRoad.IsAvailable() {
+					selectedRoad, _ = currentCity.GetRoad(rand.Intn(4))
 				}
-				if !selectedRoad.IsAvailable() {
-					return fmt.Errorf("City %v is destroyed", currentCity.Name())
-				}
+				// if !selectedRoad.IsAvailable() {
+				// 	return fmt.Errorf("City %v is destroyed", currentCity.Name())
+				// }
 				direction := selectedRoad.GetDirection()
 				if direction == Destroyed {
 					return fmt.Errorf("City %v is destroyed", currentCity.Name())
@@ -47,7 +44,7 @@ func Simulate(m *Map, aliensLeft int) error {
 				// check if there is more than one alien in the city to fight
 				if dest.HasFight() {
 					var aliensInCity = dest.aliens.Len()
-					fight(i, dest)
+					fight(i, dest, round)
 					aliensLeft -= aliensInCity
 				}
 			}
@@ -98,9 +95,9 @@ func removePaths(city *City) error {
 				return fmt.Errorf("Destination city does not exist")
 			}
 			destRoads := destCity.GetRoads()
-			var roads, res = destRoads.Destroy(opositeDir)
-			if !res {
-				return fmt.Errorf("Invalid direction")
+			roads, err := destRoads.Destroy(opositeDir)
+			if err != nil {
+				return err
 			}
 			destCity.roads = roads
 		}
@@ -110,7 +107,7 @@ func removePaths(city *City) error {
 
 // Fight destroys all the roads of the city and its aliens and
 // sets the state to destroyed
-func fight(alienID int, city *City) error {
+func fight(alienID int, city *City, round int) error {
 	_, Err := city.aliens.Get(alienID)
 	if Err != nil {
 		return Err
@@ -120,6 +117,8 @@ func fight(alienID int, city *City) error {
 		if alien.ID() == alienID {
 			continue
 		}
+		fmt.Println()
+		fmt.Println("––––––––––– Round " + strconv.Itoa(round) + " –––––––––––")
 		var msg = city.Name() + " ​has​ ​been​ ​destroyed​ ​by​ ​alien " + strconv.Itoa(alienID) +
 			"​ ​and​ ​alien​ " + strconv.Itoa(alien.ID()) + "!"
 		fmt.Println(msg)

@@ -162,22 +162,22 @@ func (roads Roads) AddRoad(road *Road) (Roads, error) {
 // }
 
 // Destroy a single road in a given direction
-func (roads Roads) Destroy(dir Direction) (Roads, bool) {
+func (roads Roads) Destroy(dir Direction) (Roads, error) {
 	switch dir {
 	case North:
-		roads[0] = nil
-		return roads, true
+		err := roads[0].Destroy()
+		return roads, err
 	case South:
-		roads[1] = nil
-		return roads, true
+		err := roads[1].Destroy()
+		return roads, err
 	case East:
-		roads[2] = nil
-		return roads, true
+		err := roads[2].Destroy()
+		return roads, err
 	case West:
-		roads[3] = nil
-		return roads, true
+		err := roads[3].Destroy()
+		return roads, err
 	default:
-		return roads, false
+		return roads, fmt.Errorf("Invalid direction")
 	}
 }
 
@@ -191,7 +191,7 @@ func (roads Roads) DestroyAll() error {
 		if err != nil {
 			return err
 		}
-		roads[i] = nil
+		// roads[i] = nil
 	}
 	return nil
 }
