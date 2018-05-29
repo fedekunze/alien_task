@@ -44,7 +44,7 @@ func Init(filename string, totalAliens int) error {
 		return err
 	}
 	fmt.Println("SIMULATION ENDED")
-	fmt.Println("Aliens left : %v. Printing results:", strconv.Itoa(aliensLeft))
+	fmt.Println("Aliens left : " + strconv.Itoa(aliensLeft) + ". Printing results:")
 	fmt.Println()
 	PrettyPrint(m)
 	return nil
@@ -148,7 +148,9 @@ func PrettyPrint(m *cosmos.Map) {
 		city, _ := m.GetCity(newline)
 		for dir := 0; dir < 4; dir++ {
 			road, _ := city.GetRoad(dir)
-			newline = ConcatRoads(road, newline)
+			if road != nil && road.IsAvailable() {
+				newline = ConcatRoads(road, newline)
+			}
 		}
 		fmt.Println(newline)
 	}
