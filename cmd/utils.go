@@ -36,14 +36,16 @@ func Init(filename string, totalAliens int) error {
 		m.Aliens.Set(index, alien)
 	}
 	fmt.Println("Running simulation...")
-	aliensLeft, err := cosmos.Simulate(m, totalAliens)
+	aliensLeft, round, err := cosmos.Simulate(m, totalAliens)
 	if err != nil {
 		return err
 	}
-	fmt.Println("SIMULATION ENDED")
+	fmt.Println()
+	fmt.Println("SIMULATION ENDED AT ROUND " + strconv.Itoa(round))
 	fmt.Println("Aliens left : " + strconv.Itoa(aliensLeft) + ". Printing results:")
 	fmt.Println()
 	PrettyPrint(m)
+	fmt.Println()
 	return nil
 }
 

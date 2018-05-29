@@ -110,6 +110,6 @@ func TestSimulate(t *testing.T) {
 		m.SetCity(city)
 		m.Aliens.Set(i, alien)
 	}
-	_, err = Simulate(m, totalAliens)
+	_, _, err = Simulate(m, totalAliens)
 	assert.Nil(t, err)
 }
