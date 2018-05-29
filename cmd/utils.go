@@ -23,8 +23,7 @@ func Init(filename string, totalAliens int) error {
 		return err
 	}
 	fmt.Println("Placing aliens in cities...")
-
-	// // select a random city from the set to add one
+	// select a random city from the set to add one
 	for index := 0; index < totalAliens; index++ {
 		randCity := rand.Intn(m.CitiesLen())
 		cityName := m.CitiesIDName[randCity]
@@ -36,8 +35,6 @@ func Init(filename string, totalAliens int) error {
 		city.AddAlien(alien)
 		m.Aliens.Set(index, alien)
 	}
-
-	// 	//
 	fmt.Println("Running simulation...")
 	aliensLeft, err := cosmos.Simulate(m, totalAliens)
 	if err != nil {
@@ -146,12 +143,16 @@ func PrettyPrint(m *cosmos.Map) {
 	for i := 0; i < m.CitiesLen(); i++ {
 		newline := m.CitiesIDName[i]
 		city, _ := m.GetCity(newline)
-		for dir := 0; dir < 4; dir++ {
-			road, _ := city.GetRoad(dir)
-			if road != nil {
-				newline = ConcatRoads(road, newline)
+		if city.IsDestroyed() {
+			for dir := 0; dir < 4; dir++ {
+				road, _ := city.GetRoad(dir)
+				if road != nil {
+					if !road.IsAvailable() {
+						newline = ConcatRoads(road, newline)
+					}
+				}
 			}
+			fmt.Println(newline)
 		}
-		fmt.Println(newline)
 	}
 }
