@@ -70,14 +70,22 @@ func ParseLine(line string, m *cosmos.Map) error {
 		// check if city with name == path[1] exists
 		cityName := strings.TrimSpace(path[1])
 		destCity, err := m.GetCity(cityName)
+		// Create city if it does not exist already
 		if err != nil {
 			destCity = cosmos.NewCity(cityName)
 			m.SetCity(destCity)
 			nCities := len(m.CitiesIDName)
 			m.CitiesIDName[nCities] = cityName
 		}
+		// Add road from origin city
 		road := cosmos.NewRoad(city, dir, destCity)
 		err = city.AddRoad(road)
+		if err != nil {
+			return err
+		}
+		// Add opossite direction road from destination city
+		road = cosmos.NewRoad(destCity, road.OppositeDirection(), city)
+		err = destCity.AddRoad(road)
 		if err != nil {
 			return err
 		}
