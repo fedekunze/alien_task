@@ -31,9 +31,9 @@ func Init(filename string, totalAliens int) error {
 		if er != nil {
 			return nil
 		}
-		alien := cosmos.NewAlien(index, *city)
+		alien := cosmos.NewAlien(index, city)
 		city.AddAlien(alien)
-		m.Aliens = append(m.Aliens, alien)
+		m.Aliens.Set(index, alien)
 	}
 
 	// 	//
@@ -57,7 +57,8 @@ func ParseLine(line string, m *cosmos.Map) error {
 	if err != nil {
 		city = cosmos.NewCity(words[0])
 		m.SetCity(city)
-		m.CitiesIDName = append(m.CitiesIDName, words[0])
+		nCities := len(m.CitiesIDName)
+		m.CitiesIDName[nCities] = words[0]
 	}
 	for i := 1; i < len(words); i++ {
 		word := strings.TrimSpace(words[i])
@@ -72,7 +73,8 @@ func ParseLine(line string, m *cosmos.Map) error {
 		if err != nil {
 			destCity = cosmos.NewCity(cityName)
 			m.SetCity(destCity)
-			m.CitiesIDName = append(m.CitiesIDName, cityName)
+			nCities := len(m.CitiesIDName)
+			m.CitiesIDName[nCities] = cityName
 		}
 		road := cosmos.NewRoad(city, dir, destCity)
 		err = city.AddRoad(road)
